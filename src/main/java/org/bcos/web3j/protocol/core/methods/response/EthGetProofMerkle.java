@@ -30,6 +30,9 @@ public class EthGetProofMerkle extends Response<EthGetProofMerkle.Proof> {
         private List<String> proofs;
         private List<String> pubs;
         private List<ProofSign> signs;
+        private List<String> receiptProofs;
+        private String receiptHash;
+        private String receiptRoot;
         private String value;
 
         public String getHash() {
@@ -87,6 +90,31 @@ public class EthGetProofMerkle extends Response<EthGetProofMerkle.Proof> {
         public void setValue(String value) {
             this.value = value;
         }
+
+        public List<String> getReceiptProofs() {
+            return receiptProofs;
+        }
+
+        public void setReceiptProofs(List<String> receiptProofs) {
+            this.receiptProofs = receiptProofs;
+        }
+
+        public String getReceiptHash() {
+            return receiptHash;
+        }
+
+        public void setReceiptHash(String receiptHash) {
+            this.receiptHash = receiptHash;
+        }
+
+        public String getReceiptRoot() {
+            return receiptRoot;
+        }
+
+        public void setReceiptRoot(String receiptRoot) {
+            this.receiptRoot = receiptRoot;
+        }
+      
     }
 
     public static class ProofSign {

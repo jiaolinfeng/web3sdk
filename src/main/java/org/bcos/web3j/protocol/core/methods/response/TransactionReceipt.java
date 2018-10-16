@@ -3,6 +3,12 @@ package org.bcos.web3j.protocol.core.methods.response;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.bcos.web3j.crypto.Hash;
+import org.bcos.web3j.crypto.sm2.util.encoders.Hex;
+import org.bcos.web3j.rlp.RlpEncoder;
+import org.bcos.web3j.rlp.RlpList;
+import org.bcos.web3j.rlp.RlpString;
+import org.bcos.web3j.rlp.RlpType;
 import org.bcos.web3j.utils.Numeric;
 
 /**
@@ -16,7 +22,7 @@ public class TransactionReceipt {
     private String cumulativeGasUsed;
     private String gasUsed;
     private String contractAddress;  // this is present in the spec
-    private String root;
+    private String stateRoot;
     private String from;
     private String to;
     private List<Log> logs;
@@ -27,7 +33,7 @@ public class TransactionReceipt {
 
     public TransactionReceipt(String transactionHash, String transactionIndex,
                               String blockHash, String blockNumber, String cumulativeGasUsed,
-                              String gasUsed, String contractAddress, String root, String from,
+                              String gasUsed, String contractAddress, String stateRoot, String from,
                               String to, List<Log> logs, String logsBloom) {
         this.transactionHash = transactionHash;
         this.transactionIndex = transactionIndex;
@@ -36,7 +42,7 @@ public class TransactionReceipt {
         this.cumulativeGasUsed = cumulativeGasUsed;
         this.gasUsed = gasUsed;
         this.contractAddress = contractAddress;
-        this.root = root;
+        this.stateRoot = stateRoot;
         this.from = from;
         this.to = to;
         this.logs = logs;
@@ -115,12 +121,12 @@ public class TransactionReceipt {
         this.contractAddress = contractAddress;
     }
 
-    public String getRoot() {
-        return root;
+    public String getStateRoot() {
+        return stateRoot;
     }
 
-    public void setRoot(String root) {
-        this.root = root;
+    public void setStateRoot(String stateRoot) {
+        this.stateRoot = stateRoot;
     }
 
     public String getFrom() {
@@ -198,8 +204,8 @@ public class TransactionReceipt {
                 : that.getContractAddress() != null) {
             return false;
         }
-        if (getRoot() != null
-                ? !getRoot().equals(that.getRoot()) : that.getRoot() != null) {
+        if (getStateRoot() != null
+                ? !getStateRoot().equals(that.getStateRoot()) : that.getStateRoot() != null) {
             return false;
         }
         if (getFrom() != null ? !getFrom().equals(that.getFrom()) : that.getFrom() != null) {
@@ -215,6 +221,27 @@ public class TransactionReceipt {
                 ? getLogsBloom().equals(that.getLogsBloom()) : that.getLogsBloom() == null;
     }
 
+    public String getHash() {
+        RlpList logList = new RlpList();
+        for (Log log : logs) {
+            RlpList topicList = new RlpList();
+            for (String topic : log.getTopics()) {
+                System.out.println("topic: " +topic);
+                topicList.add(RlpString.create(Hex.decode(topic.substring(2))));
+            }
+
+            RlpList logInfo = new RlpList(RlpString.create(Hex.decode(log.getAddress().substring(2))), topicList, 
+                    RlpString.create(Hex.decode(log.getData().substring(2))));
+            logList.add((RlpType)logInfo); 
+        }
+        RlpList receiptList = new RlpList(
+                RlpString.create(Hex.decode(stateRoot.substring(2))),
+                RlpString.create(Integer.parseInt(gasUsed.substring(2), 16)),
+                RlpString.create(Hex.decode(contractAddress.substring(2))),
+                RlpString.create(Hex.decode(logsBloom.substring(2))), logList);
+        return Hex.toHexString(Hash.sha3(RlpEncoder.encode(receiptList)));
+    }
+    
     @Override
     public int hashCode() {
         int result = getTransactionHash() != null ? getTransactionHash().hashCode() : 0;
@@ -224,7 +251,7 @@ public class TransactionReceipt {
         result = 31 * result + (cumulativeGasUsed != null ? cumulativeGasUsed.hashCode() : 0);
         result = 31 * result + (gasUsed != null ? gasUsed.hashCode() : 0);
         result = 31 * result + (getContractAddress() != null ? getContractAddress().hashCode() : 0);
-        result = 31 * result + (getRoot() != null ? getRoot().hashCode() : 0);
+        result = 31 * result + (getStateRoot() != null ? getStateRoot().hashCode() : 0);
         result = 31 * result + (getFrom() != null ? getFrom().hashCode() : 0);
         result = 31 * result + (getTo() != null ? getTo().hashCode() : 0);
         result = 31 * result + (getLogs() != null ? getLogs().hashCode() : 0);
