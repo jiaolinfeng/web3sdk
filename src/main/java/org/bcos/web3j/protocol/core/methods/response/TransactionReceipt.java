@@ -226,7 +226,6 @@ public class TransactionReceipt {
         for (Log log : logs) {
             RlpList topicList = new RlpList();
             for (String topic : log.getTopics()) {
-                System.out.println("topic: " +topic);
                 topicList.add(RlpString.create(Hex.decode(topic.substring(2))));
             }
 
