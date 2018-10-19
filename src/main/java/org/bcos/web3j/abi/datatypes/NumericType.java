@@ -52,7 +52,6 @@ public abstract class NumericType implements Type<BigInteger> {
 
     @Override
     public String toString() {
-        // TODO Auto-generated method stub
         return getValue().toString();
     }
     

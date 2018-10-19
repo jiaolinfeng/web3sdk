@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.bcos.web3j.crypto.Keys;
+import org.bcos.web3j.utils.Numeric;
+
 /**
  * Fixed size array.
  */
@@ -78,5 +81,17 @@ public abstract class Array<T extends Type> implements Type<List<T>> {
         int result = type.hashCode();
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
+    }
+    
+    @Override
+    public String toString() {
+        String str = "[";
+        for (T type : value) {
+            if (str.length() > 1)
+                str += ",";
+            str += type.getValue();
+        }
+        str += "]";
+        return str;
     }
 }

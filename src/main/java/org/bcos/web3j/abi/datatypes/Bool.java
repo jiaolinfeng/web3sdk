@@ -1,5 +1,8 @@
 package org.bcos.web3j.abi.datatypes;
 
+import org.bcos.web3j.crypto.Keys;
+import org.bcos.web3j.utils.Numeric;
+
 /**
  * Boolean type.
  */
@@ -41,5 +44,10 @@ public class Bool implements Type<Boolean> {
     @Override
     public int hashCode() {
         return (value ? 1 : 0);
+    }
+    
+    @Override
+    public String toString() {
+        return (value ? "true" : "false");
     }
 }
