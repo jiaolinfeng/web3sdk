@@ -390,6 +390,23 @@ public abstract class Contract extends ManagedTransaction {
 
         return values;
     }
+    
+    protected static List<EventValues> extractEventParameters(
+            Event event, TransactionReceipt transactionReceipt, String contractAddress) {
+
+        List<Log> logs = transactionReceipt.getLogs();
+        List<EventValues> values = new ArrayList<>();
+        for (Log log : logs) {
+            if (!log.getAddress().equals(contractAddress))
+                continue;
+            EventValues eventValues = extractEventParameters(event, log);
+            if (eventValues != null) {
+                values.add(eventValues);
+            }
+        }
+
+        return values;
+    }
 
     protected static <T extends Contract> T deploy(
             Class<T> type,

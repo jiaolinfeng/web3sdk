@@ -643,7 +643,46 @@ public class SolidityFunctionWrapper {
         transactionMethodBuilder.addStatement("return responses");
         return transactionMethodBuilder.build();
     }
+    
+    static MethodSpec buildEventTransactionReceiptFunctionFromAddress(String responseClassName, String
+            functionName, List<NamedTypeName> indexedParameters, List<NamedTypeName>
+                                                                   nonIndexedParameters) throws
+            ClassNotFoundException {
 
+        ParameterizedTypeName parameterizedTypeName = ParameterizedTypeName.get(
+                ClassName.get(List.class), ClassName.get("", responseClassName));
+
+        String generatedFunctionName = "get" + Strings.capitaliseFirstLetter(functionName)
+                + "EventsFromAddress";
+        MethodSpec.Builder transactionMethodBuilder = MethodSpec
+                .methodBuilder(generatedFunctionName)
+                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.STATIC)
+                .addParameter(TransactionReceipt.class, "transactionReceipt")
+                .addParameter(String.class, "contractAddress")
+                .returns(parameterizedTypeName);
+
+        buildVariableLengthEventConstructor(
+                transactionMethodBuilder, functionName, indexedParameters, nonIndexedParameters);
+
+        transactionMethodBuilder.addStatement("$T valueList = extractEventParameters(event, "
+                + "transactionReceipt, contractAddress)", ParameterizedTypeName.get(List.class, EventValues.class))
+                .addStatement("$1T responses = new $1T(valueList.size())",
+                        ParameterizedTypeName.get(ClassName.get(ArrayList.class),
+                                ClassName.get("", responseClassName)))
+                .beginControlFlow("for ($T eventValues : valueList)", EventValues.class)
+                .addStatement("$1T typedResponse = new $1T()",
+                        ClassName.get("", responseClassName))
+                .addCode(buildTypedResponse("typedResponse", indexedParameters,
+                        nonIndexedParameters))
+                .addStatement("responses.add(typedResponse)")
+                .endControlFlow();
+
+
+        transactionMethodBuilder.addStatement("return responses");
+        return transactionMethodBuilder.build();
+    }
+    
     static void buildEventFunctions(
             AbiDefinition functionDefinition,
             TypeSpec.Builder classBuilder) throws ClassNotFoundException {
@@ -669,6 +708,8 @@ public class SolidityFunctionWrapper {
                 nonIndexedParameters));
 
         classBuilder.addMethod(buildEventTransactionReceiptFunction(responseClassName,
+                functionName, indexedParameters, nonIndexedParameters));
+        classBuilder.addMethod(buildEventTransactionReceiptFunctionFromAddress(responseClassName,
                 functionName, indexedParameters, nonIndexedParameters));
         classBuilder.addMethod(buildEventObservableFunction(responseClassName, functionName,
                 indexedParameters, nonIndexedParameters));
